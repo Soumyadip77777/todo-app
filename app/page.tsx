@@ -37,7 +37,11 @@ export default function TodoApp() {
       // Check for expired todos
       setTodos((prevTodos) =>
         prevTodos.map((todo) => {
-          if (todo.status === "pending" && isAfter(currentTime, new Date(todo.date))) {
+          // Compare only the date parts without time
+          const todoDate = new Date(todo.date)
+          todoDate.setHours(23, 59, 59, 999) // Set to end of the day
+
+          if (todo.status === "pending" && isAfter(currentTime, todoDate)) {
             return { ...todo, status: "expired" }
           }
           return todo
@@ -62,7 +66,10 @@ export default function TodoApp() {
 
         // Check for expired todos on load
         const updatedTodos = todosWithDates.map((todo: Todo) => {
-          if (todo.status === "pending" && isAfter(new Date(), new Date(todo.date))) {
+          const todoDate = new Date(todo.date)
+          todoDate.setHours(23, 59, 59, 999) // Set to end of the day
+
+          if (todo.status === "pending" && isAfter(new Date(), todoDate)) {
             return { ...todo, status: "expired" }
           }
           return todo
@@ -91,7 +98,10 @@ export default function TodoApp() {
     }
 
     // Check if already expired
-    if (isAfter(new Date(), date)) {
+    const todoEndDate = new Date(date)
+    todoEndDate.setHours(23, 59, 59, 999) // Set to end of the day
+
+    if (isAfter(new Date(), todoEndDate)) {
       newTodoItem.status = "expired"
     }
 
@@ -276,13 +286,16 @@ function TodoList({
   }
 
   const getCountdown = (todoDate: Date) => {
-    if (isAfter(currentTime, todoDate)) {
+    const endOfDay = new Date(todoDate)
+    endOfDay.setHours(23, 59, 59, 999) // Set to end of the day
+
+    if (isAfter(currentTime, endOfDay)) {
       return "Expired"
     }
 
-    const days = differenceInDays(todoDate, currentTime)
-    const hours = differenceInHours(todoDate, currentTime) % 24
-    const minutes = differenceInMinutes(todoDate, currentTime) % 60
+    const days = differenceInDays(endOfDay, currentTime)
+    const hours = differenceInHours(endOfDay, currentTime) % 24
+    const minutes = differenceInMinutes(endOfDay, currentTime) % 60
 
     if (days > 0) {
       return `${days}d ${hours}h remaining`
